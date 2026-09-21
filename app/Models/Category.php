@@ -16,6 +16,7 @@ class Category extends Model
         'description',
         'image',
         'status',
+        'created_at',
     ];
 
     public function courses()
