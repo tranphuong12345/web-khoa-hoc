@@ -79,35 +79,46 @@ class AuthController
     /**
      * Xử lý Đăng nhập
      */
-    public function login(Request $request): JsonResponse
-    {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+  public function login(Request $request): JsonResponse
+{
+    $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-return response()->json([
-                'success' => false,
-                'message' => 'Email hoặc mật khẩu không chính xác.',
-            ], 401);
-        }
-
-        if ($user->status != 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tài khoản của bạn đã bị khóa.',
-            ], 403);
-        }
-
+    if (!$user || !Hash::check($request->password, $user->password)) {
         return response()->json([
-            'success' => true,
-            'message' => 'Đăng nhập thành công!',
-            'data' => $user
-        ], 200);
+            'success' => false,
+            'message' => 'Email hoặc mật khẩu không chính xác.',
+        ], 401);
     }
+
+    if ($user->status == 2) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Tài khoản của bạn đang chờ quản trị viên phê duyệt.',
+        ], 403);
+    }
+
+    if ($user->status != 1) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Tài khoản của bạn đã bị khóa.',
+        ], 403);
+    }
+
+    // Tạo token đăng nhập
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Đăng nhập thành công!',
+        'data' => $user,
+        'token' => $token,
+    ], 200);
+}
 
     /**
      * Upload / Thay đổi Avatar
@@ -212,123 +223,5 @@ $user->save();
         ]);
     }
 
-    public function getPendingSellers(Request $request): JsonResponse
-    {
-        try {
-            $limit = $request->input('limit', 10);
-
-            $users = User::where('status', 2)
-                ->whereIn('role', ['student', 'seller'])
-                ->orderBy('created_at', 'desc')
-                ->paginate($limit);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách hồ sơ giảng viên chờ duyệt thành công',
-                'currentPage' => $users->currentPage(),
-                'totalPage' => $users->lastPage(),
-                'totalItems' => $users->total(),
-                'limit' => $users->perPage(),
-                'data' => $users->items(),
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function getPendingSellerById($id): JsonResponse
-    {
-        try {
-            $user = User::where('user_id', $id)
-                ->where('status', 2)
-                ->whereIn('role', ['student', 'seller'])
-                ->first();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy hồ sơ đang chờ duyệt',
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy thông tin hồ sơ thành công',
-                'data' => $user,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-public function approveSeller($id): JsonResponse
-    {
-        try {
-            $user = User::where('user_id', $id)
-                ->where('status', 2)
-                ->whereIn('role', ['student', 'seller'])
-                ->first();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy hồ sơ đang chờ duyệt',
-                ], 404);
-            }
-
-            $user->update([
-                'role' => 'seller',
-                'status' => 1,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Phê duyệt giảng viên thành công',
-                'data' => $user,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function rejectSeller($id): JsonResponse
-    {
-        try {
-            $user = User::where('user_id', $id)
-                ->where('status', 2)
-                ->whereIn('role', ['student', 'seller'])
-                ->first();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy hồ sơ đang chờ duyệt',
-                ], 404);
-            }
-
-            $user->update([
-                'role' => 'student',
-                'status' => 1,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã từ chối hồ sơ giảng viên',
-                'data' => $user,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+    
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AdminApprovalController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\UserController;
@@ -46,25 +47,68 @@ Route::get('/category/{slug}', [CategoryController::class, 'show']);
 Route::get('/courses', [CourseController::class, 'index']);
 Route::put('/courses/{id}', [CourseController::class, 'update']);
 Route::post('/courses/{id}/image', [CourseController::class, 'updateImage']);
-Route::get('/admin/approval/sellers', [
-    AuthController::class,
-    'getPendingSellers'
-]);
+// Route::get('/admin/approval/sellers', [
+//     AuthController::class,
+//     'getPendingSellers'
+// ]);
 
-Route::get('/admin/approval/sellers/{id}', [
-    AuthController::class,
-    'getPendingSellerById'
-]);
+// Route::get('/admin/approval/sellers/{id}', [
+//     AuthController::class,
+//     'getPendingSellerById'
+// ]);
 
-Route::put('/admin/approval/sellers/{id}/approve', [
-    AuthController::class,
-    'approveSeller'
-]);
+// Route::put('/admin/approval/sellers/{id}/approve', [
+//     AuthController::class,
+//     'approveSeller'
+// ]);
 
-Route::put('/admin/approval/sellers/{id}/reject', [
-    AuthController::class,
-    'rejectSeller'
-]);
+// Route::put('/admin/approval/sellers/{id}/reject', [
+//     AuthController::class,
+//     'rejectSeller'
+// ]);
+
+Route::prefix('admin/approval')->group(function () {
+
+    Route::get('/sellers', [
+        AdminApprovalController::class,
+        'getPendingSellers'
+    ]);
+
+    Route::get('/sellers/{id}', [
+        AdminApprovalController::class,
+        'getPendingSellerById'
+    ]);
+
+    Route::put('/sellers/{id}/approve', [
+        AdminApprovalController::class,
+        'approveSeller'
+    ]);
+
+    Route::put('/sellers/{id}/reject', [
+        AdminApprovalController::class,
+        'rejectSeller'
+    ]);
+
+    Route::get('/courses', [
+        AdminApprovalController::class,
+        'getPendingCourses'
+    ]);
+
+    Route::get('/courses/{id}', [
+        AdminApprovalController::class,
+        'getPendingCourseById'
+    ]);
+
+    Route::put('/courses/{id}/approve', [
+        AdminApprovalController::class,
+        'approveCourse'
+    ]);
+
+    Route::put('/courses/{id}/reject', [
+        AdminApprovalController::class,
+        'rejectCourse'
+    ]);
+});
 // Lesson
 Route::resource('lesson', LessonController::class);
 
@@ -100,3 +144,10 @@ Route::resource('review', ReviewController::class);
 
 // Notification
 Route::resource('notification', NotificationController::class);
+Route::middleware(['auth:sanctum', 'seller'])
+    ->prefix('seller')
+    ->group(function () {
+
+        Route::post('/courses', [CourseController::class, 'store']);
+
+    });

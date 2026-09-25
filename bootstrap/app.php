@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
+         $middleware->alias([
+        'seller' => \App\Http\Middleware\SellerMiddleware::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

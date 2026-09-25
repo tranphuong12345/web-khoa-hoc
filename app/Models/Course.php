@@ -11,19 +11,25 @@ class Course extends Model
 
     protected $primaryKey = 'course_id'; // Khai báo khóa chính nếu không phải 'id'
 
-    protected $fillable = [
-        'course_name',
+   protected $fillable = [
         'category_id',
         'seller_id',
+        'course_name',
+        'slug',
+        'description',
+        'image',
         'price',
         'sale_price',
-        'commission_rate',
         'level',
         'duration',
-        'description',
         'status',
-        'rejection_reason'
     ];
+
+    // Quan hệ 1 khóa học có nhiều Chương (Sections)
+    public function sections()
+    {
+        return $this->hasMany(Section::class, 'course_id', 'course_id');
+    }
 
     // Mối quan hệ với Danh mục (Categories)
     public function category()
@@ -38,8 +44,5 @@ class Course extends Model
     }
 
     // Mối quan hệ với Bài học
-    public function lessons()
-    {
-        return $this->hasMany(Lesson::class, 'course_id', 'course_id');
-    }
+    
 }

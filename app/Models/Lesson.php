@@ -2,29 +2,30 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Lesson extends Model
 {
-    protected $table = 'lessons';
+    use HasFactory;
+
+    protected $table = 'lessons'; // Hoặc 'course_lessons' tùy tên bảng thực tế của bạn
+    protected $primaryKey = 'lesson_id';
 
     protected $fillable = [
-        'course_id',
+        'section_id',
         'lesson_name',
         'content',
         'video_url',
         'duration',
         'sort_order',
         'is_preview',
-        'status',
     ];
 
-    public function course()
+    // Quan hệ thuộc về 1 Chương
+    public function section()
     {
-        return $this->belongsTo(
-            Course::class,
-            'course_id'
-        );
+        return $this->belongsTo(Section::class, 'section_id', 'section_id');
     }
 
     public function progress()

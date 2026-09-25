@@ -113,13 +113,6 @@ class UserController
             $user->account_holder_name =
                 $request->account_holder_name;
 
-            // Nếu Admin đang đăng nhập và tạo user
-            if (auth()->check()) {
-                $user->created_by = auth()->id();
-            }
-
-            // Nếu tự đăng ký thì created_by = NULL
-
             $user->save();
 
             DB::commit();
@@ -220,11 +213,6 @@ class UserController
 
             $user->account_holder_name =
                 $request->account_holder_name;
-
-            // Người cập nhật
-            if (auth()->check()) {
-                $user->updated_by = auth()->id();
-            }
 
             $user->save();
 
